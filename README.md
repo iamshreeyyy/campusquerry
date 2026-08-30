@@ -1,82 +1,85 @@
 # CampusQuery
 
-> Your AI-Powered IIITDMJ Knowledge Companion
+> **Your AI-Powered IIITDMJ Knowledge Companion**
 
-CampusQuery is a **Retrieval-Augmented Generation (RAG)** based AI assistant designed to answer questions about **Indian Institute of Information Technology, Design and Manufacturing Jabalpur (IIITDMJ)**.
+CampusQuery is a **Retrieval-Augmented Generation (RAG)** based AI assistant for answering questions about **Indian Institute of Information Technology, Design and Manufacturing Jabalpur (IIITDMJ)**.
 
-It combines semantic search over a FAISS vector database with an LLM to generate answers grounded in the retrieved institutional information.
-
-![CampusQuery Interface](screenshot.png)
+The application retrieves relevant information from a local **FAISS vector database** and provides the retrieved context to an LLM hosted through **Groq**. The interface is built with **Streamlit** and the RAG pipeline is implemented using **LangChain**.
 
 ## ✨ Features
 
-* 🤖 AI-powered conversational question answering
-* 📚 **RAG-based retrieval** from IIITDMJ information
-* 🔎 Semantic similarity search using FAISS
-* 🧠 HuggingFace `all-MiniLM-L6-v2` embeddings
-* ⚡ Fast inference through Groq
+* 🤖 AI-powered question answering about IIITDMJ
+* 📚 Retrieval-Augmented Generation (RAG)
+* 🔎 Semantic search using FAISS
+* 🧠 `all-MiniLM-L6-v2` embeddings through HuggingFace
+* ⚡ LLM inference through Groq
 * 💬 Interactive Streamlit chat interface
-* 🔄 Persistent chat history during the session
-* 🎯 Context-grounded responses designed to reduce hallucinations
-* 🔐 API keys managed through environment variables
+* 🔄 Session-based conversation history
+* 🎯 Responses grounded in retrieved context
+* 🔐 API key loaded through environment variables
+* ✍️ Typing animation for assistant responses
 
 ## 🏗️ How It Works
 
-CampusQuery follows a simple RAG pipeline:
+CampusQuery uses the following RAG pipeline:
 
 ```text
 User Question
       ↓
-Query Processing
+HuggingFace Embedding Model
       ↓
-HuggingFace Embeddings
+FAISS Similarity Search
       ↓
-FAISS Vector Search
+Top 3 Relevant Documents
       ↓
-Relevant IIITDMJ Context
+Retrieved Context
       ↓
-Prompt + Retrieved Context
+Prompt + Context + Question
       ↓
 Groq LLM
       ↓
-Grounded Response
+Generated Response
       ↓
-Streamlit Chat UI
+Streamlit Chat Interface
 ```
 
-The application retrieves relevant information from the vector database and provides that context to the language model before generating a response.
+The application retrieves the **top 3 relevant documents** from the FAISS vector store and includes their content in the prompt sent to the LLM.
 
-The system is also instructed to avoid making assumptions when the required information is not present in the retrieved context.
+The prompt instructs the model to answer using the retrieved context and avoid making unsupported assumptions when the required information is not available.
 
 ## 🛠️ Tech Stack
 
 | Component              | Technology                     |
 | ---------------------- | ------------------------------ |
+| Language               | Python                         |
 | Frontend / UI          | Streamlit                      |
 | LLM                    | `openai/gpt-oss-20b`           |
 | LLM Provider           | Groq                           |
-| Embeddings             | HuggingFace `all-MiniLM-L6-v2` |
-| Vector Database        | FAISS                          |
 | RAG Framework          | LangChain                      |
-| Language               | Python                         |
+| Embeddings             | HuggingFace `all-MiniLM-L6-v2` |
+| Vector Store           | FAISS                          |
 | Environment Management | Environs                       |
+
+## 📸 Interface
+
+![CampusQuery Interface](screenshot.png)
 
 ## 📁 Project Structure
 
 ```text
 CampusQuery/
 ├── app.py                 # Main Streamlit application
-├── main.ipynb             # Notebook used during development
+├── main.ipynb             # Development / experimentation notebook
 ├── requirements.txt       # Python dependencies
 ├── README.md              # Project documentation
 ├── LICENSE               # MIT License
 ├── screenshot.png         # Application screenshot
 ├── photo/                 # Application assets
-├── vectorDB/              # Local FAISS vector database
-└── vectorDB1/             # Additional local vector database
+├── vectorDB/              # FAISS vector store
+└── .gitignore             # Git ignore rules
 ```
 
-> `.env`, `.venv/`, Python cache files, and other local/generated files are excluded from version control through `.gitignore`.
+> `.env`, `.venv/`, `__pycache__/`, and other local/generated files are excluded from version control.
 
 ## 🚀 Getting Started
 
@@ -89,14 +92,14 @@ cd campusquerry
 
 ### 2. Create a virtual environment
 
-Linux / macOS:
+#### Linux / macOS
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-Windows:
+#### Windows
 
 ```bash
 python -m venv .venv
@@ -117,7 +120,7 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-**Never commit your `.env` file or expose your API key publicly.**
+**Do not commit your `.env` file or expose your API key publicly.**
 
 ### 5. Run the application
 
@@ -125,7 +128,7 @@ GROQ_API_KEY=your_groq_api_key_here
 streamlit run app.py
 ```
 
-The application will be available at:
+The application will normally be available at:
 
 ```text
 http://localhost:8501
@@ -133,7 +136,7 @@ http://localhost:8501
 
 ## 🔑 Environment Variables
 
-CampusQuery currently requires:
+The application currently requires:
 
 ```text
 GROQ_API_KEY
@@ -141,23 +144,21 @@ GROQ_API_KEY
 
 The key is loaded from `.env` using `environs`.
 
-## 🧠 RAG Architecture
+## 🧠 RAG Implementation
 
-CampusQuery uses Retrieval-Augmented Generation instead of relying solely on the language model's internal knowledge.
+The RAG pipeline works as follows:
 
-The process is:
+1. The user submits a question through the Streamlit interface.
+2. The question is embedded using HuggingFace's `all-MiniLM-L6-v2` model.
+3. FAISS performs a similarity search against the stored document embeddings.
+4. The application retrieves the top **3** relevant documents.
+5. The retrieved document content is combined into a context string.
+6. The context and user's question are passed into a LangChain prompt.
+7. The prompt is sent to `openai/gpt-oss-20b` through Groq.
+8. The generated response is displayed in the Streamlit chat interface.
+9. The conversation is stored in Streamlit session state for the current session.
 
-1. The user submits a question.
-2. The question is converted into an embedding using `all-MiniLM-L6-v2`.
-3. FAISS performs similarity search against the stored document embeddings.
-4. Relevant information is retrieved from the vector database.
-5. The retrieved information is inserted into the prompt.
-6. The Groq-hosted LLM generates the final response.
-7. The response is displayed through the Streamlit interface.
-
-This approach helps the assistant provide answers based on the available IIITDMJ information rather than freely generating unsupported facts.
-
-## 🎯 Example Queries
+## 💬 Example Queries
 
 You can ask questions such as:
 
@@ -166,18 +167,18 @@ Tell me about the CSE branch.
 
 What programs are offered at IIITDMJ?
 
-What information is available about the institute?
-
 Tell me about the academic programs.
+
+What information is available about IIITDMJ?
 ```
 
-The quality of the response depends on the information available in the underlying knowledge base.
+The answers depend on the information available in the underlying FAISS knowledge base.
 
 ## 🔒 Security
 
-API credentials should always be stored locally using environment variables.
+API credentials are loaded through environment variables rather than being hard-coded into the application.
 
-The following files/directories should **not** be committed:
+Make sure files such as the following remain excluded from Git:
 
 ```text
 .env
@@ -185,22 +186,26 @@ The following files/directories should **not** be committed:
 __pycache__/
 ```
 
-Make sure your `.gitignore` contains the appropriate entries before pushing changes to GitHub.
+Before pushing changes, verify that your API key has not been accidentally staged:
+
+```bash
+git status
+```
 
 ## 🔮 Future Improvements
 
-Potential improvements include:
+Some potential improvements for the project include:
 
-* 📌 Better document ingestion and preprocessing
-* 🔄 Automatic document updates
-* 🗃️ Scalable database architecture
-* 🔍 Improved retrieval and reranking
-* 📊 Query analytics and monitoring
-* 👤 User authentication
-* 💾 Persistent conversation storage
-* ☁️ Cloud deployment
-* ⚡ Streaming LLM responses
-* 🧪 Automated evaluation of RAG responses
+* Improved document ingestion and preprocessing
+* Automatic updating of the knowledge base
+* Better retrieval and document reranking
+* Persistent conversation storage
+* User authentication
+* Query analytics and monitoring
+* Automated RAG evaluation
+* Cloud deployment
+* Response streaming
+* More scalable vector/database architecture
 
 ## 🤝 Contributing
 
@@ -213,19 +218,20 @@ Contributions are welcome.
 git checkout -b feature/AmazingFeature
 ```
 
-3. Commit your changes:
+3. Make your changes.
+4. Commit your changes:
 
 ```bash
 git commit -m "Add AmazingFeature"
 ```
 
-4. Push the branch:
+5. Push your branch:
 
 ```bash
 git push origin feature/AmazingFeature
 ```
 
-5. Open a Pull Request.
+6. Open a Pull Request.
 
 ## 📄 License
 
