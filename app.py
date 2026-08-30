@@ -10,10 +10,7 @@ import time
 # Load resources and initialize environment
 def load_resources():
     parser = StrOutputParser()
-    env = Env()
-    env.read_env(".env")
-
-    api_key = env("GROQ_API_KEY")
+    api_key = st.secrets["GROQ_API_KEY"]
     chat = ChatGroq(temperature=0.4, model_name="openai/gpt-oss-20b", groq_api_key=api_key)
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
