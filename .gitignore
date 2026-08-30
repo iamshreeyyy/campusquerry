@@ -40,7 +40,6 @@ ENV/
 .env
 
 # Model files and vectors
-vectorDB/
 embeddings/
 *.bin
 *.pkl
@@ -83,3 +82,7 @@ Thumbs.db
 local_settings.py
 settings_local.py.env
 .env
+# Keep the FAISS vector store required by the app
+!vectorDB/
+!vectorDB/*.faiss
+!vectorDB/*.pkl
